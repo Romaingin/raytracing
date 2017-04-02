@@ -1,12 +1,12 @@
 #include "raytracer.h"
+#include <glm/glm.hpp>
+#include "glm/ext.hpp"
 #include <iostream>
 #include <unistd.h>
 
-Raytracer::Raytracer (int width, int height) {
-	// Attributes
-	_screen_width = width;
-	_screen_height = height;
-	_target_size = 32;
+Raytracer::Raytracer (int width, int height) :
+	_screen_width(width), _screen_height(height), _target_size(32),
+	_camera(glm::vec3(0,0,1), glm::vec3(0,0,0), 90.0, (float)width / (float)height) {
 
 	// Create SLD window
 	_window = SDL_CreateWindow(
@@ -34,6 +34,7 @@ Raytracer::Raytracer (int width, int height) {
 								_screen_width, _screen_height);
 	_box = SDL_CreateTexture(_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,
 								_target_size, _target_size);
+	_format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
 
 	// Create a box
 	SDL_SetRenderTarget(_renderer, _box);
@@ -44,8 +45,6 @@ Raytracer::Raytracer (int width, int height) {
 	SDL_RenderDrawLine(_renderer, _target_size-1, _target_size-1, 0, _target_size-1);
 	SDL_RenderPresent(_renderer);
 	SDL_SetRenderTarget(_renderer, NULL);
-
-	_format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
 }
 
 void Raytracer::computeImage () {
@@ -91,6 +90,8 @@ void Raytracer::computeImage () {
 		SDL_RenderCopy(_renderer, _image, NULL, NULL);
 		SDL_RenderCopy(_renderer, _box, NULL, &box_rect);
 		SDL_RenderPresent(_renderer);
+
+		std::cout << glm::to_string(_camera.getRay(0.5, 0.5)) << '\n';
 	}
 }
 
@@ -114,7 +115,7 @@ void Raytracer::setPixel (SDL_Surface *surface, int x, int y, Uint32 color) {
 // > traceZone
 //		Compute a particlar square of the image
 void Raytracer::traceZone (int X, int Y) {
-	usleep(500000); // TODO
+	usleep(50000); // TODO
 
 	void *tmp;
 	Uint32 *pixels;

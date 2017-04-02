@@ -1,6 +1,7 @@
 #ifndef RAYTRACER_H
 #define RAYTRACER_H
 
+#include "camera.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <cstdint>
@@ -17,6 +18,9 @@ private:
 	int _screen_width;
 	int _screen_height;
 	int _target_size;
+
+	// Scene
+	Camera _camera;
 
 	// Methods
 	void setPixel(SDL_Surface *, int, int, uint32_t);
