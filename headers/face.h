@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-class Triangle {
+class Face {
 private:
 	// Points
 	glm::vec3 _A;
@@ -25,8 +25,9 @@ public:
 	glm::vec3 getNormal() { return _n; }
 	bool isRayThrough(glm::vec3, glm::vec3);
 
-	Triangle (glm::vec3, glm::vec3, glm::vec3);
-	~Triangle () {}
+	Face (glm::vec3, glm::vec3, glm::vec3);
+	Face (glm::vec3, glm::vec3, glm::vec3, glm::vec3);
+	~Face () {}
 };
 
 #endif

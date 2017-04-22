@@ -1,12 +1,13 @@
 #include "raytracer.h"
 #include "glm/ext.hpp"
+#include "objloader.h"
 #include <glm/glm.hpp>
 #include <iostream>
 #include <unistd.h>
 
 Raytracer::Raytracer (int width, int height) :
 	_screen_width(width), _screen_height(height), _target_size(32),
-	_camera(glm::vec3(0,0,1), glm::vec3(0,0,0), 90.0, (float)width / (float)height) {
+	_camera(glm::vec3(1.8,1.2,2), glm::vec3(0,0,0), 90.0, (float)width / (float)height) {
 
 	// Create SLD window
 	_window = SDL_CreateWindow(
@@ -45,6 +46,8 @@ Raytracer::Raytracer (int width, int height) :
 	SDL_RenderDrawLine(_renderer, _target_size-1, _target_size-1, 0, _target_size-1);
 	SDL_RenderPresent(_renderer);
 	SDL_SetRenderTarget(_renderer, NULL);
+
+	objLoader("scene/cube.obj", _cube);
 }
 
 void Raytracer::computeImage () {
@@ -110,12 +113,11 @@ void Raytracer::saveImage (const char* file_name) {
 void Raytracer::traceZone (int X, int Y) {
 	// usleep(3000); // TODO
 
-	// TODO
-	Triangle T(glm::vec3(0,0,0),glm::vec3(0.3,0.1,0),glm::vec3(-0.1,0.2,0));
-
 	void *tmp;
 	Uint32 *pixels;
 	int pitch;
+
+	Face F(glm::vec3(0,0,0), glm::vec3(1,0,0), glm::vec3(0,1,0));
 
 	// Lock
 	SDL_LockTexture(_image, NULL, &tmp, &pitch);
@@ -131,7 +133,11 @@ void Raytracer::traceZone (int X, int Y) {
 			glm::vec3 ray = _camera.getRay(x, y);
 
 			// Test if in triangle
-			Uint8 s = 255 * T.isRayThrough(ray, _camera.getPosition());
+			Uint8 s = 0;
+			for (Face f : _cube) {
+				s |= f.isRayThrough(ray, _camera.getPosition());
+			}
+			s *= 255;
 
 			pixels[(Y + j) * _screen_width + (X + i)] = SDL_MapRGBA(_format, s, s, s, 255);
 			// std::cout << glm::to_string(_camera.getPosition()) << '\n';

@@ -2,10 +2,11 @@
 #define RAYTRACER_H
 
 #include "camera.h"
-#include "triangle.h"
+#include "face.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <cstdint>
+#include <vector>
 
 class Raytracer {
 private:
@@ -22,6 +23,7 @@ private:
 
 	// Scene
 	Camera _camera;
+	std::vector<Face> _cube;
 
 	// Methods
 	void setPixel(SDL_Surface *, int, int, uint32_t);
