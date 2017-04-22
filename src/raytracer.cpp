@@ -5,17 +5,19 @@
 #include <iostream>
 #include <unistd.h>
 
-Raytracer::Raytracer (int width, int height) :
-	_screen_width(width), _screen_height(height), _target_size(32),
-	_camera(glm::vec3(1.8,1.2,2), glm::vec3(0,0,0), 90.0, (float)width / (float)height) {
+Raytracer::Raytracer (ProgramOptions& po_) :
+	_antialiaser(po_.antialiasing),
+	_camera(glm::vec3(1.8,1.2,2), glm::vec3(0,0,0), 90.0, (float)po_.image_width / (float)po_.image_height) {
+	// Options
+	po = po_;
 
 	// Create SLD window
 	_window = SDL_CreateWindow(
 		"Drone@Hack",
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
-		_screen_width,
-		_screen_height,
+		po.image_width,
+		po.image_height,
 		0
 	);
 
@@ -32,18 +34,18 @@ Raytracer::Raytracer (int width, int height) :
 	SDL_RenderClear(_renderer);
 
 	_image = SDL_CreateTexture(_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING,
-								_screen_width, _screen_height);
+								po.image_width, po.image_height);
 	_box = SDL_CreateTexture(_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,
-								_target_size, _target_size);
+								po.target_size, po.target_size);
 	_format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
 
 	// Create a box
 	SDL_SetRenderTarget(_renderer, _box);
 	SDL_SetRenderDrawColor(_renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
-	SDL_RenderDrawLine(_renderer, 0, 0, _target_size-1, 0);
-	SDL_RenderDrawLine(_renderer, 0, 0, 0, _target_size-1);
-	SDL_RenderDrawLine(_renderer, _target_size-1, 0, _target_size-1, _target_size-1);
-	SDL_RenderDrawLine(_renderer, _target_size-1, _target_size-1, 0, _target_size-1);
+	SDL_RenderDrawLine(_renderer, 0, 0, po.target_size-1, 0);
+	SDL_RenderDrawLine(_renderer, 0, 0, 0, po.target_size-1);
+	SDL_RenderDrawLine(_renderer, po.target_size-1, 0, po.target_size-1, po.target_size-1);
+	SDL_RenderDrawLine(_renderer, po.target_size-1, po.target_size-1, 0, po.target_size-1);
 	SDL_RenderPresent(_renderer);
 	SDL_SetRenderTarget(_renderer, NULL);
 
@@ -59,8 +61,8 @@ void Raytracer::computeImage () {
 	int x = 0;
 	int y = 0;
 	SDL_Rect box_rect;
-	box_rect.w = _target_size;
-	box_rect.h = _target_size;
+	box_rect.w = po.target_size;
+	box_rect.h = po.target_size;
 
 	// Main loop
 	while (isRunning) {
@@ -78,12 +80,12 @@ void Raytracer::computeImage () {
 		if (!hasFinished) {
 			// Render a zone
 			traceZone(x, y);
-			x += _target_size;
-			if (x >= _screen_width) {
+			x += po.target_size;
+			if (x >= po.image_width) {
 				x = 0;
-				y += _target_size;
+				y += po.target_size;
 			}
-			if (y >= _screen_height) {
+			if (y >= po.image_height) {
 				hasFinished = false;
 			}
 
@@ -102,7 +104,7 @@ void Raytracer::computeImage () {
 // > saveImage
 //		Write the screen content to a image file
 void Raytracer::saveImage (const char* file_name) {
-	SDL_Surface *sshot = SDL_CreateRGBSurface(0, _screen_width, _screen_height, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+	SDL_Surface *sshot = SDL_CreateRGBSurface(0, po.image_width, po.image_height, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
 	SDL_RenderReadPixels(_renderer, NULL, SDL_PIXELFORMAT_ARGB8888, sshot->pixels, sshot->pitch);
 	SDL_SaveBMP(sshot, file_name);
 	SDL_FreeSurface(sshot);
@@ -123,24 +125,38 @@ void Raytracer::traceZone (int X, int Y) {
 	SDL_LockTexture(_image, NULL, &tmp, &pitch);
 	pixels = (Uint32 *)tmp;
 
-	int sx = std::min(_target_size, _screen_width - X);
-	int sy = std::min(_target_size, _screen_height - Y);
+	Uint8 s;
+	int sx = std::min(po.target_size, po.image_width - X);
+	int sy = std::min(po.target_size, po.image_height - Y);
+	// For all pixels
 	for (int i = 0; i < sx; i++) {
 		for (int j = 0; j < sy; j++) {
-			// Get the ray coming from the camera
-			float x = (float)(X + i) / (float)_screen_width - 0.5;
-			float y = (float)(Y + j) / (float)_screen_height - 0.5;
-			glm::vec3 ray = _camera.getRay(x, y);
+			_antialiaser.resetPixelValue();
+			// For all samples
+			for (glm::vec2 samp : _antialiaser.getPixelSamplesRepartition()) {
+				// Get the ray coming from the camera
+				float x = (float)(X + i + samp.x) / (float)po.image_width - 0.5;
+				float y = (float)(Y + j + samp.y) / (float)po.image_height - 0.5;
+				glm::vec3 ray = _camera.getRay(x, y);
 
-			// Test if in triangle
-			Uint8 s = 0;
-			for (Face f : _cube) {
-				s |= f.isRayThrough(ray, _camera.getPosition());
+				// Test if in triangle
+				s = 0;
+				for (Face f : _cube) {
+					s |= f.isRayThrough(ray, _camera.getPosition());
+				}
+				s *= 255;
+
+				// Add color to sampling process
+				_antialiaser.setSampleValue ({s,s,s,255});
 			}
-			s *= 255;
 
-			pixels[(Y + j) * _screen_width + (X + i)] = SDL_MapRGBA(_format, s, s, s, 255);
-			// std::cout << glm::to_string(_camera.getPosition()) << '\n';
+			// Set pixel color
+			color_t color = _antialiaser.getPixelValue();
+			pixels[(Y + j) * po.image_width + (X + i)] = SDL_MapRGBA(_format,
+																	(Uint8)color.x,
+																	(Uint8)color.y,
+																	(Uint8)color.z,
+																	(Uint8)color.t);
 		}
 	}
 

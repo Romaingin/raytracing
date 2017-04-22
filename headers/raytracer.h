@@ -3,6 +3,8 @@
 
 #include "camera.h"
 #include "face.h"
+#include "programoptions.h"
+#include "antialiaser.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <cstdint>
@@ -16,10 +18,10 @@ private:
 	SDL_Texture* _image;
 	SDL_Texture* _box;
 	SDL_PixelFormat* _format;
+	Antialiaser _antialiaser;
 
-	int _screen_width;
-	int _screen_height;
-	int _target_size;
+	// Options
+	ProgramOptions po;
 
 	// Scene
 	Camera _camera;
@@ -32,7 +34,7 @@ public:
 	void saveImage (const char *);
 	void traceZone (int, int);
 
-	Raytracer (int, int);
+	Raytracer (ProgramOptions&);
 	~Raytracer ();
 };
 

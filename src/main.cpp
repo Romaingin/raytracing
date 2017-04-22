@@ -1,4 +1,5 @@
 #include "raytracer.h"
+#include "programoptions.h"
 #include <iostream>
 
 int main () {
@@ -6,7 +7,15 @@ int main () {
 	SDL_Init(SDL_INIT_EVERYTHING);
 	IMG_Init(IMG_INIT_PNG);
 
-	Raytracer raytracer(512, 512);
+	// OPTIONS of the program
+	ProgramOptions po = {
+		512,	// Width of the picture
+		512,	// Height of the picture
+		32,		// Width and height of the areas to render sequentially
+		2,		// Level of antialiasing
+	};
+
+	Raytracer raytracer(po);
 
 	// Run
 	raytracer.computeImage();
