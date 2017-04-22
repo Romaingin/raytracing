@@ -1,21 +1,20 @@
 #include "raytracer.h"
 #include <iostream>
 
-int main (int argc, char const *argv[]) {
+int main () {
 	// Init SDL libraries
 	SDL_Init(SDL_INIT_EVERYTHING);
 	IMG_Init(IMG_INIT_PNG);
 
-	Raytracer* raytracer = new Raytracer(512, 512);
+	Raytracer raytracer(512, 512);
 
 	// Run
-	raytracer->computeImage();
+	raytracer.computeImage();
 
 	// Save Image
-	raytracer->saveImage("render.bmp");
+	raytracer.saveImage("render.bmp");
 
 	// Quit
-	delete raytracer;
 	IMG_Quit();
 	SDL_Quit();
 

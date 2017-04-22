@@ -2,6 +2,7 @@
 #define RAYTRACER_H
 
 #include "camera.h"
+#include "triangle.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <cstdint>

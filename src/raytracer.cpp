@@ -1,6 +1,6 @@
 #include "raytracer.h"
-#include <glm/glm.hpp>
 #include "glm/ext.hpp"
+#include <glm/glm.hpp>
 #include <iostream>
 #include <unistd.h>
 
@@ -50,6 +50,7 @@ Raytracer::Raytracer (int width, int height) :
 void Raytracer::computeImage () {
 	SDL_Event event;
 	bool isRunning = true;
+	bool hasFinished = false;
 
 	// Coordinates
 	int x = 0;
@@ -71,27 +72,27 @@ void Raytracer::computeImage () {
 			}
 		}
 
-		// Render a zone
-		traceZone(y, x);
-		x += _target_size;
-		if (x >= _screen_width) {
-			x = 0;
-			y += _target_size;
-		}
-		if (y >= _screen_height) {
-			isRunning = false;
-		}
+		if (!hasFinished) {
+			// Render a zone
+			traceZone(x, y);
+			x += _target_size;
+			if (x >= _screen_width) {
+				x = 0;
+				y += _target_size;
+			}
+			if (y >= _screen_height) {
+				hasFinished = false;
+			}
 
-		// Draw a box
-		box_rect.x = x;
-		box_rect.y = y;
+			// Draw a box
+			box_rect.x = x;
+			box_rect.y = y;
+		}
 
 		// Render to screen
 		SDL_RenderCopy(_renderer, _image, NULL, NULL);
 		SDL_RenderCopy(_renderer, _box, NULL, &box_rect);
 		SDL_RenderPresent(_renderer);
-
-		std::cout << glm::to_string(_camera.getRay(0.5, 0.5)) << '\n';
 	}
 }
 
@@ -100,22 +101,17 @@ void Raytracer::computeImage () {
 void Raytracer::saveImage (const char* file_name) {
 	SDL_Surface *sshot = SDL_CreateRGBSurface(0, _screen_width, _screen_height, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
 	SDL_RenderReadPixels(_renderer, NULL, SDL_PIXELFORMAT_ARGB8888, sshot->pixels, sshot->pitch);
-	SDL_SaveBMP(sshot, "render.bmp");
+	SDL_SaveBMP(sshot, file_name);
 	SDL_FreeSurface(sshot);
 }
 
-// > setPixel
-//		Write a single pixel to a surfa
-void Raytracer::setPixel (SDL_Surface *surface, int x, int y, Uint32 color) {
-	Uint8 * pixel = (Uint8*)surface->pixels;
-	pixel += (y * surface->pitch) + (x * sizeof(Uint32));
-	*((Uint32*)pixel) = color;
-}
-
 // > traceZone
-//		Compute a particlar square of the image
+//		Compute a particlar square (X, Y) of the image
 void Raytracer::traceZone (int X, int Y) {
-	usleep(50000); // TODO
+	// usleep(3000); // TODO
+
+	// TODO
+	Triangle T(glm::vec3(0,0,0),glm::vec3(0.3,0.1,0),glm::vec3(-0.1,0.2,0));
 
 	void *tmp;
 	Uint32 *pixels;
@@ -129,7 +125,16 @@ void Raytracer::traceZone (int X, int Y) {
 	int sy = std::min(_target_size, _screen_height - Y);
 	for (int i = 0; i < sx; i++) {
 		for (int j = 0; j < sy; j++) {
-			pixels[(X + i) * _screen_height + (Y + j)] = SDL_MapRGBA(_format, 0, (Uint8)(4 * i), 0, 255);
+			// Get the ray coming from the camera
+			float x = (float)(X + i) / (float)_screen_width - 0.5;
+			float y = (float)(Y + j) / (float)_screen_height - 0.5;
+			glm::vec3 ray = _camera.getRay(x, y);
+
+			// Test if in triangle
+			Uint8 s = 255 * T.isRayThrough(ray, _camera.getPosition());
+
+			pixels[(Y + j) * _screen_width + (X + i)] = SDL_MapRGBA(_format, s, s, s, 255);
+			// std::cout << glm::to_string(_camera.getPosition()) << '\n';
 		}
 	}
 
