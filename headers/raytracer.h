@@ -5,6 +5,7 @@
 #include "face.h"
 #include "programoptions.h"
 #include "antialiaser.h"
+#include "sun.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <cstdint>
@@ -26,6 +27,7 @@ private:
 	// Scene
 	Camera _camera;
 	std::vector<Face> _cube;
+	Sun _sun;
 
 	// Methods
 	void setPixel(SDL_Surface *, int, int, uint32_t);

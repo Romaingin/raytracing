@@ -7,7 +7,8 @@
 
 Raytracer::Raytracer (ProgramOptions& po_) :
 	_antialiaser(po_.antialiasing),
-	_camera(glm::vec3(1.8,1.2,2), glm::vec3(0,0,0), 90.0, (float)po_.image_width / (float)po_.image_height) {
+	_camera(glm::vec3(1.8,1.2,2), glm::vec3(0,0,0), 90.0, (float)po_.image_width / (float)po_.image_height),
+	_sun(glm::vec3(-0.7, -1.5, -1.2)) {
 	// Options
 	po = po_;
 
@@ -49,7 +50,9 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 	SDL_RenderPresent(_renderer);
 	SDL_SetRenderTarget(_renderer, NULL);
 
+	// Set scene
 	objLoader("scene/cube.obj", _cube);
+
 }
 
 void Raytracer::computeImage () {
