@@ -9,11 +9,15 @@ int main () {
 
 	// OPTIONS of the program
 	ProgramOptions po = {
-		512,	// Width of the picture
-		512,	// Height of the picture
+		768,	// Width of the picture
+		768,	// Height of the picture
 		32,		// Width and height of the areas to render sequentially
 		2,		// Level of antialiasing
 	};
+
+	std::cout << "Image resolution : " << po.image_width << "x" << po.image_height << '\n';
+	std::cout << "Antialiasing Level : " << po.antialiasing << '\n';
+
 
 	Raytracer raytracer(po);
 

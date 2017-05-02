@@ -13,7 +13,7 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 
 	// Create SLD window
 	_window = SDL_CreateWindow(
-		"Drone@Hack",
+		"Raytracer",
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
 		po.image_width,

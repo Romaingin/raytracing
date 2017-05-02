@@ -4,7 +4,6 @@
 
 Antialiaser::Antialiaser (int level) {
 	_level = level;
-	std::cout << "Antialiasing Level : " << _level << '\n';
 
 	// Set scattering profile and weights
 	float norm = 0;
