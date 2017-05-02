@@ -31,6 +31,6 @@ public:
 		_color = glm::vec4(255, 255, 255, 255);
 	}
 	~Sun () {}
-}
+};
 
 #endif

@@ -26,8 +26,8 @@ private:
 
 	// Scene
 	Camera _camera;
-	std::vector<Face> _cube;
 	Sun _sun;
+	std::vector<Face> _cube;
 
 	// Methods
 	void setPixel(SDL_Surface *, int, int, uint32_t);
