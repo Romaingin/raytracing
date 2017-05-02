@@ -52,7 +52,7 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 	SDL_SetRenderTarget(_renderer, NULL);
 
 	// Set scene
-	objLoader("scene/cube.obj", _cube);
+	objLoader("scene/pyramid.obj", _cube);
 
 }
 
