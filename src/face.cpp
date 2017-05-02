@@ -51,7 +51,7 @@ Face::Face (vec3 A, vec3 B, vec3 C, vec3 N) {
 
 // > isRayThrough
 //		Check if a ray v coming from a certain point P passes within the triangle
-bool Face::isRayThrough(vec3 ray, vec3 P) {
+bool Face::isRayThrough(vec3 ray, vec3 P, float *dist) {
 	if (!_isDefined) return false;
 
 	// Get the intersection with the triangle plan
@@ -66,5 +66,6 @@ bool Face::isRayThrough(vec3 ray, vec3 P) {
 	bool b1 = dot(n1, n2) >= 0;
 	bool b2 = dot(n2, n3) >= 0;
 
+	*dist = t;
 	return b1 && b2;
 }

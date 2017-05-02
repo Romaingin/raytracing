@@ -26,7 +26,7 @@ public:
 	}
 
 	Sun (glm::vec3 dir) {
-		_dir = dir;
+		_dir = glm::normalize(dir);
 		_intensity = 1.0;
 		_color = glm::vec4(255, 255, 255, 255);
 	}
