@@ -4,10 +4,11 @@
 #include <glm/glm.hpp>
 #include <iostream>
 #include <unistd.h>
+#include <algorithm>
 
 Raytracer::Raytracer (ProgramOptions& po_) :
 	_antialiaser(po_.antialiasing),
-	_camera(glm::vec3(1.8,1.2,2), glm::vec3(0,0,0), 90.0, (float)po_.image_width / (float)po_.image_height),
+	_camera(glm::vec3(2.3,1.2,2), glm::vec3(0,0,0), 90.0, (float)po_.image_width / (float)po_.image_height),
 	_sun(glm::vec3(-0.7, -1.5, -1.2)) {
 	// Options
 	po = po_;
@@ -128,7 +129,6 @@ void Raytracer::traceZone (int X, int Y) {
 	SDL_LockTexture(_image, NULL, &tmp, &pitch);
 	pixels = (Uint32 *)tmp;
 
-	Uint8 s;
 	int sx = std::min(po.target_size, po.image_width - X);
 	int sy = std::min(po.target_size, po.image_height - Y);
 	// For all pixels
@@ -143,14 +143,17 @@ void Raytracer::traceZone (int X, int Y) {
 				glm::vec3 ray = _camera.getRay(x, y);
 
 				// Test if in triangle
-				s = 0;
+				float minDist = 1e99;
+				float dist = minDist;
+				glm::vec4 color(0,0,255,255);
 				for (Face f : _cube) {
-					s |= f.isRayThrough(ray, _camera.getPosition());
+					if (f.isRayThrough(ray, _camera.getPosition(), &dist)) {
+						float lighting = std::max(0.0f, -glm::dot(f.getNormal(),_sun.getDirection()));
+						color= _sun.getColor()*lighting*_sun.getIntensity();
+					}
 				}
-				s *= 255;
-
 				// Add color to sampling process
-				_antialiaser.setSampleValue ({s,s,s,255});
+				_antialiaser.setSampleValue (color);
 			}
 
 			// Set pixel color

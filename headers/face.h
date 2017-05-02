@@ -23,7 +23,7 @@ private:
 
 public:
 	glm::vec3 getNormal() { return _n; }
-	bool isRayThrough(glm::vec3, glm::vec3);
+	bool isRayThrough(glm::vec3, glm::vec3, float*);
 
 	Face (glm::vec3, glm::vec3, glm::vec3);
 	Face (glm::vec3, glm::vec3, glm::vec3, glm::vec3);
