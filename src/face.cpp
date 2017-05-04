@@ -4,7 +4,8 @@
 using namespace glm;
 
 // No normal specified
-Face::Face (vec3 A, vec3 B, vec3 C) {
+Face::Face (int id, vec3 A, vec3 B, vec3 C) {
+	_id = id;
 	_A = A;
 	_B = B;
 	_C = C;
@@ -28,7 +29,8 @@ Face::Face (vec3 A, vec3 B, vec3 C) {
 }
 
 // Normal specified
-Face::Face (vec3 A, vec3 B, vec3 C, vec3 N) {
+Face::Face (int id, vec3 A, vec3 B, vec3 C, vec3 N) {
+	_id = id;
 	_A = A;
 	_B = B;
 	_C = C;
@@ -51,7 +53,7 @@ Face::Face (vec3 A, vec3 B, vec3 C, vec3 N) {
 
 // > isRayThrough
 //		Check if a ray v coming from a certain point P passes within the triangle
-bool Face::isRayThrough(vec3 ray, vec3 P, float *dist) {
+bool Face::isRayThrough(vec3 ray, vec3 P, float *dist, vec3 *inter) {
 	if (!_isDefined) return false;
 
 	// Get the intersection with the triangle plan
@@ -67,5 +69,6 @@ bool Face::isRayThrough(vec3 ray, vec3 P, float *dist) {
 	bool b2 = dot(n2, n3) >= 0;
 
 	*dist = t;
+	*inter = Inter;
 	return b1 && b2;
 }

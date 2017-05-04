@@ -19,6 +19,7 @@ bool objLoader(const char *path, std::vector<Face>& outFaces) {
 		return false;
 	}
 
+	int i = 0;
 	std::vector<glm::vec3> outVertices;
 	std::vector<glm::vec3> outNormals;
 	std::string line;
@@ -43,10 +44,11 @@ bool objLoader(const char *path, std::vector<Face>& outFaces) {
 													&vertexIndex[2], &normalIndex[2] );
 
 			// Create a new face
-			outFaces.push_back(Face(outVertices[vertexIndex[0]-1],
+			outFaces.push_back(Face(i, outVertices[vertexIndex[0]-1],
 									outVertices[vertexIndex[1]-1],
 									outVertices[vertexIndex[2]-1],
 									outNormals[normalIndex[0]-1]));
+			i++;
 		}
 	}
 

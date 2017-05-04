@@ -6,6 +6,9 @@
 
 class Face {
 private:
+	// Id
+	int _id;
+
 	// Points
 	glm::vec3 _A;
 	glm::vec3 _B;
@@ -23,10 +26,13 @@ private:
 
 public:
 	glm::vec3 getNormal() { return _n; }
-	bool isRayThrough(glm::vec3, glm::vec3, float*);
+	bool isRayThrough(glm::vec3, glm::vec3, float*, glm::vec3*);
+	int getId() {
+		return _id;
+	}
 
-	Face (glm::vec3, glm::vec3, glm::vec3);
-	Face (glm::vec3, glm::vec3, glm::vec3, glm::vec3);
+	Face (int, glm::vec3, glm::vec3, glm::vec3);
+	Face (int, glm::vec3, glm::vec3, glm::vec3, glm::vec3);
 	~Face () {}
 };
 

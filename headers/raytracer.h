@@ -28,6 +28,7 @@ private:
 	Camera _camera;
 	Sun _sun;
 	std::vector<Face> _cube;
+	glm::vec4 _backgroundColor;
 
 	// Methods
 	void setPixel(SDL_Surface *, int, int, uint32_t);

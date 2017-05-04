@@ -8,7 +8,7 @@
 
 Raytracer::Raytracer (ProgramOptions& po_) :
 	_antialiaser(po_.antialiasing),
-	_camera(glm::vec3(2.3,1.2,2), glm::vec3(0,0,0), 90.0, (float)po_.image_width / (float)po_.image_height),
+	_camera(glm::vec3(2.8,2.5,2), glm::vec3(0,0,0), 90.0, (float)po_.image_width / (float)po_.image_height),
 	_sun(glm::vec3(-0.7, -1.5, -1.2)) {
 	// Options
 	po = po_;
@@ -52,7 +52,8 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 	SDL_SetRenderTarget(_renderer, NULL);
 
 	// Set scene
-	objLoader("scene/pyramid.obj", _cube);
+	_backgroundColor = glm::vec4(200, 200, 200, 255);
+	objLoader("scene/cube.obj", _cube);
 
 }
 
@@ -123,11 +124,14 @@ void Raytracer::traceZone (int X, int Y) {
 	Uint32 *pixels;
 	int pitch;
 
-	Face F(glm::vec3(0,0,0), glm::vec3(1,0,0), glm::vec3(0,1,0));
-
 	// Lock
 	SDL_LockTexture(_image, NULL, &tmp, &pitch);
 	pixels = (Uint32 *)tmp;
+	glm::vec4 color;
+	glm::vec3 inter;
+	glm::vec3 normal;
+	glm::vec3 inter_tmp;
+	int faceId;
 
 	int sx = std::min(po.target_size, po.image_width - X);
 	int sy = std::min(po.target_size, po.image_height - Y);
@@ -143,15 +147,38 @@ void Raytracer::traceZone (int X, int Y) {
 				glm::vec3 ray = _camera.getRay(x, y);
 
 				// Test if in triangle
+				faceId = -1;
 				float minDist = 1e99;
 				float dist = minDist;
-				glm::vec4 color(0,0,255,255);
+				color = _backgroundColor;
 				for (Face f : _cube) {
-					if (f.isRayThrough(ray, _camera.getPosition(), &dist)) {
-						float lighting = std::max(0.0f, -glm::dot(f.getNormal(),_sun.getDirection()));
-						color= _sun.getColor()*lighting*_sun.getIntensity();
+					if (f.isRayThrough(ray, _camera.getPosition(), &dist, &inter_tmp) && dist < minDist) {
+						minDist = dist;
+						faceId = f.getId();
+						inter = inter_tmp;
+						normal = f.getNormal();
 					}
 				}
+
+				// Found a face ?
+				if (faceId >= 0) {
+					// Direct light ?
+					bool isWithinShadow = false;
+					for (Face f : _cube) {
+						if (f.getId() != faceId && f.isRayThrough(-_sun.getDirection(), inter, &dist, &inter_tmp) && dist > 0) {
+							isWithinShadow = true;
+							break;
+						}
+					}
+
+					if (isWithinShadow) {
+						color = glm::vec4(0,0,0,255);
+					} else {
+						float lighting = std::max(0.0f, -glm::dot(normal,_sun.getDirection()));
+						color = _sun.getColor()*lighting*_sun.getIntensity();
+					}
+				}
+
 				// Add color to sampling process
 				_antialiaser.setSampleValue (color);
 			}
