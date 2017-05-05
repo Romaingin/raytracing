@@ -9,7 +9,7 @@
 Raytracer::Raytracer (ProgramOptions& po_) :
 	_antialiaser(po_.antialiasing),
 	_camera(glm::vec3(2.8,2.5,2), glm::vec3(0,0,0), 90.0, (float)po_.image_width / (float)po_.image_height),
-	_sun(glm::vec3(-0.7, -1.5, -1.2)) {
+	_sun(glm::vec3(0.7, -1.5, -1.2)) {
 	// Options
 	po = po_;
 
@@ -53,7 +53,7 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 
 	// Set scene
 	_backgroundColor = glm::vec4(200, 200, 200, 255);
-	objLoader("scene/cube.obj", _cube);
+	objLoader("scene/pyramid.obj", _cube);
 
 }
 
