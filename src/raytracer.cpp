@@ -1,6 +1,7 @@
 #include "raytracer.h"
 #include "glm/ext.hpp"
 #include "objloader.h"
+#include "methods.h"
 #include <glm/glm.hpp>
 #include <iostream>
 #include <unistd.h>
@@ -129,11 +130,7 @@ void Raytracer::traceZone (int X, int Y) {
 	// Lock
 	SDL_LockTexture(_image, NULL, &tmp, &pitch);
 	pixels = (Uint32 *)tmp;
-	glm::vec4 color;
-	glm::vec3 inter;
-	glm::vec3 normal;
-	glm::vec3 inter_tmp;
-	int faceId;
+	glm::vec4 color_samp;
 
 	int sx = std::min(po.target_size, po.image_width - X);
 	int sy = std::min(po.target_size, po.image_height - Y);
@@ -148,50 +145,17 @@ void Raytracer::traceZone (int X, int Y) {
 				float y = (float)(Y + j + samp.y) / (float)po.image_height - 0.5;
 				glm::vec3 ray = _scene.camera.getRay(x, y);
 
-				// Test if in triangle
-				faceId = -1;
-				float minDist = 1e99;
-				float dist = minDist;
-				color = _scene.backgroundColor;
-				for (Face f : _scene.elements[0]->faces) {
-					if (f.isRayThrough(ray, _scene.camera.getPosition(), &dist, &inter_tmp) && dist < minDist) {
-						minDist = dist;
-						faceId = f.getId();
-						inter = inter_tmp;
-						normal = f.getNormal();
-					}
-				}
-
-				// Found a face ?
-				if (faceId >= 0) {
-					// Direct light ?
-					bool isWithinShadow = false;
-					for (Face f : _scene.elements[0]->faces) {
-						if (f.getId() != faceId && f.isRayThrough(-_scene.sun.getDirection(), inter, &dist, &inter_tmp) && dist > 0) {
-							isWithinShadow = true;
-							break;
-						}
-					}
-
-					if (isWithinShadow) {
-						color = glm::vec4(0,0,0,255);
-					} else {
-						float lighting = std::max(0.0f, -glm::dot(normal, _scene.sun.getDirection()));
-						color = _scene.sun.getColor()*lighting*_scene.sun.getIntensity();
-					}
-				}
+				// TRACE !
+				color_samp = tracer(_scene, ray);
 
 				// Add color to sampling process
-				_antialiaser.setSampleValue (color);
+				_antialiaser.setSampleValue (color_samp);
 			}
 
 			// Set pixel color
 			color_t color = _antialiaser.getPixelValue();
-			pixels[(Y + j) * po.image_width + (X + i)] = SDL_MapRGBA(_format,
-																	(Uint8)color.x,
-																	(Uint8)color.y,
-																	(Uint8)color.z,
-																	(Uint8)color.t);
+			int p = (Y + j) * po.image_width + (X + i);
+			pixels[p] = SDL_MapRGBA(_format, (Uint8)color.x, (Uint8)color.y, (Uint8)color.z, (Uint8)color.t);
 		}
 	}
 
