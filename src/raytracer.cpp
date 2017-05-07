@@ -7,9 +7,10 @@
 #include <algorithm>
 
 Raytracer::Raytracer (ProgramOptions& po_) :
-	_antialiaser(po_.antialiasing),
-	_camera(glm::vec3(2.8,2.5,2), glm::vec3(0,0,0), 90.0, (float)po_.image_width / (float)po_.image_height),
-	_sun(glm::vec3(0.7, -1.5, -1.2)) {
+	_antialiaser {po_.antialiasing},
+	_scene {glm::vec3(2.8,2.5,2), glm::vec3(0,0,0), 90.0,
+			(float)po_.image_width / (float)po_.image_height,
+			glm::vec3(0.7, -1.5, -1.2)} {
 	// Options
 	po = po_;
 
@@ -52,9 +53,10 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 	SDL_SetRenderTarget(_renderer, NULL);
 
 	// Set scene
-	_backgroundColor = glm::vec4(200, 200, 200, 255);
-	objLoader("scene/pyramid.obj", _cube);
+	_scene.backgroundColor = glm::vec4(200, 200, 200, 255);
 
+	_scene.elements.push_back(new Element());
+	objLoader("scene/pyramid.obj", _scene.elements[0]->faces);
 }
 
 void Raytracer::computeImage () {
@@ -144,15 +146,15 @@ void Raytracer::traceZone (int X, int Y) {
 				// Get the ray coming from the camera
 				float x = (float)(X + i + samp.x) / (float)po.image_width - 0.5;
 				float y = (float)(Y + j + samp.y) / (float)po.image_height - 0.5;
-				glm::vec3 ray = _camera.getRay(x, y);
+				glm::vec3 ray = _scene.camera.getRay(x, y);
 
 				// Test if in triangle
 				faceId = -1;
 				float minDist = 1e99;
 				float dist = minDist;
-				color = _backgroundColor;
-				for (Face f : _cube) {
-					if (f.isRayThrough(ray, _camera.getPosition(), &dist, &inter_tmp) && dist < minDist) {
+				color = _scene.backgroundColor;
+				for (Face f : _scene.elements[0]->faces) {
+					if (f.isRayThrough(ray, _scene.camera.getPosition(), &dist, &inter_tmp) && dist < minDist) {
 						minDist = dist;
 						faceId = f.getId();
 						inter = inter_tmp;
@@ -164,8 +166,8 @@ void Raytracer::traceZone (int X, int Y) {
 				if (faceId >= 0) {
 					// Direct light ?
 					bool isWithinShadow = false;
-					for (Face f : _cube) {
-						if (f.getId() != faceId && f.isRayThrough(-_sun.getDirection(), inter, &dist, &inter_tmp) && dist > 0) {
+					for (Face f : _scene.elements[0]->faces) {
+						if (f.getId() != faceId && f.isRayThrough(-_scene.sun.getDirection(), inter, &dist, &inter_tmp) && dist > 0) {
 							isWithinShadow = true;
 							break;
 						}
@@ -174,8 +176,8 @@ void Raytracer::traceZone (int X, int Y) {
 					if (isWithinShadow) {
 						color = glm::vec4(0,0,0,255);
 					} else {
-						float lighting = std::max(0.0f, -glm::dot(normal,_sun.getDirection()));
-						color = _sun.getColor()*lighting*_sun.getIntensity();
+						float lighting = std::max(0.0f, -glm::dot(normal, _scene.sun.getDirection()));
+						color = _scene.sun.getColor()*lighting*_scene.sun.getIntensity();
 					}
 				}
 

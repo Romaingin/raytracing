@@ -3,6 +3,7 @@
 
 #include "camera.h"
 #include "face.h"
+#include "scene.h"
 #include "programoptions.h"
 #include "antialiaser.h"
 #include "sun.h"
@@ -25,10 +26,7 @@ private:
 	ProgramOptions po;
 
 	// Scene
-	Camera _camera;
-	Sun _sun;
-	std::vector<Face> _cube;
-	glm::vec4 _backgroundColor;
+	Scene _scene;
 
 	// Methods
 	void setPixel(SDL_Surface *, int, int, uint32_t);

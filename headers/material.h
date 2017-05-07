@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <string>
 
-struct Materiau {
+struct Material {
 	std::string nom;
 	glm::vec4 specularColor;
 	glm::vec4 diffuseColor;
