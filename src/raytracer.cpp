@@ -79,8 +79,14 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 	objLoader("scene/ground.obj", _scene.elements[0]->faces);
 	_scene.elements[0]->material = matSolid;
 	_scene.elements.push_back(new Element()); // Cubes
-	objLoader("scene/cubes.obj", _scene.elements[1]->faces);
+	objLoader("scene/cube1.obj", _scene.elements[1]->faces);
 	_scene.elements[1]->material = matGlass;
+	_scene.elements.push_back(new Element()); // Cubes
+	objLoader("scene/cube2.obj", _scene.elements[2]->faces);
+	_scene.elements[2]->material = matGlass;
+	_scene.elements.push_back(new Element()); // Cubes
+	objLoader("scene/cube3.obj", _scene.elements[3]->faces);
+	_scene.elements[3]->material = matGlass;
 	_scene.elementNumber = 2;
 }
 
