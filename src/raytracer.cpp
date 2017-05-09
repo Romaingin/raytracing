@@ -170,7 +170,7 @@ void Raytracer::traceZone (int X, int Y) {
 				glm::vec3 ray = _scene.camera.getRay(x, y);
 
 				// TRACE !
-				color_samp = tracer(_scene, ray);
+				color_samp = tracer(_scene, ray, _scene.camera.getPosition());
 
 				// Add color to sampling process
 				_antialiaser.setSampleValue (color_samp);

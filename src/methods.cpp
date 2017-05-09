@@ -2,14 +2,14 @@
 
 using namespace glm;
 
-vec4 tracer (Scene& scene, vec3 ray) {
-	vec4 color;
+color_t tracer (Scene& scene, vec3 ray, vec3 origin) {
+	color_t color;
 	int faceId;
 	size_t elementId;
 	vec3 intersection;
 	vec3 normal;
 
-	intersectionFinder(scene, ray, faceId, elementId, intersection, normal);
+	intersectionFinder(scene, ray, origin, faceId, elementId, intersection, normal);
 
 	if (faceId >= 0) {
 		if (shadowMapping(scene, faceId, elementId, intersection)) {
@@ -23,7 +23,7 @@ vec4 tracer (Scene& scene, vec3 ray) {
 	return color;
 }
 
-void intersectionFinder (Scene& scene, vec3 ray, int& faceId, size_t& elementId, vec3& intersection, vec3& normal) {
+void intersectionFinder (Scene& scene, vec3 ray, vec3 origin, int& faceId, size_t& elementId, vec3& intersection, vec3& normal) {
 	faceId = -1;
 	vec3 inter_tmp;
 	float minDist = 1e99;
@@ -31,7 +31,7 @@ void intersectionFinder (Scene& scene, vec3 ray, int& faceId, size_t& elementId,
 
 	for (size_t el = 0; el < scene.elementNumber; el++) {
 		for (Face f : scene.elements[el]->faces) {
-			if (f.isRayThrough(ray, scene.camera.getPosition(), &dist, &inter_tmp) && dist < minDist) {
+			if (f.isRayThrough(ray, origin, &dist, &inter_tmp) && dist < minDist && dist > 0) {
 				minDist = dist;
 				faceId = f.getId();
 				elementId = el;
@@ -58,6 +58,6 @@ bool shadowMapping (Scene& scene, int faceId, size_t elementId, vec3 point) {
 	return false;
 }
 
-glm::vec4 reflectionMapping (Scene& scene, int faceId, size_t elementId, glm::vec3 point, glm::vec3 incidentRay) {
-	
+color_t reflectionMapping (Scene& scene, int faceId, size_t elementId, vec3 point, vec3 incidentRay) {
+
 }
