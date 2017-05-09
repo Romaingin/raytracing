@@ -13,7 +13,7 @@ color_t tracer (Scene& scene, vec3 ray, vec3 origin) {
 
 	if (faceId >= 0) {
 		if (shadowMapping(scene, faceId, elementId, intersection)) {
-			color = vec4(0,0,0,255);
+			color = vec4(0.0,0.0,0.0,1.0);
 		} else {
 			float lighting = std::max(0.0f, -dot(normal, scene.sun.getDirection()));
 			color = scene.sun.getColor() * lighting * scene.sun.getIntensity() * scene.elements[elementId]->material.diffuseColor;

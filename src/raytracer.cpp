@@ -91,7 +91,7 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 	};
 
 	// Set scene
-	_scene.backgroundColor = glm::vec4(250, 250, 250, 255);
+	_scene.backgroundColor = glm::vec4(1.0,1.0,1.0,1.0);
 
 	_scene.elements.push_back(new Element()); // Floor
 	objLoader("scene/ground.obj", _scene.elements[0]->faces);
@@ -201,7 +201,7 @@ void Raytracer::traceZone (int X, int Y) {
 			}
 
 			// Set pixel color
-			color_t color = _antialiaser.getPixelValue();
+			color_t color = _antialiaser.getPixelValue() * 255;
 			int p = (Y + j) * po.image_width + (X + i);
 			pixels[p] = SDL_MapRGBA(_format, (Uint8)color.x, (Uint8)color.y, (Uint8)color.z, (Uint8)color.t);
 		}
