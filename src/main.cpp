@@ -13,6 +13,7 @@ int main () {
 		768,	// Height of the picture
 		32,		// Width and height of the areas to render sequentially
 		2,		// Level of antialiasing
+		10		// Max recursion depth
 	};
 
 	std::cout << "Image resolution : " << po.image_width << "x" << po.image_height << '\n';

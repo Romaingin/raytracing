@@ -59,7 +59,7 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 		glm::vec4(0.0,1.0,1.0,1.0),
 		glm::vec4(1.0,1.0,1.0,1.0),
 		0.00,
-		0.00,
+		0.30,
 		1.00
 	};
 
@@ -91,7 +91,7 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 	};
 
 	// Set scene
-	_scene.backgroundColor = glm::vec4(1.0,1.0,1.0,1.0);
+	_scene.backgroundColor = glm::vec4(0.9,0.9,1.0,1.0);
 
 	_scene.elements.push_back(new Element()); // Floor
 	objLoader("scene/ground.obj", _scene.elements[0]->faces);
@@ -194,7 +194,7 @@ void Raytracer::traceZone (int X, int Y) {
 				glm::vec3 ray = _scene.camera.getRay(x, y);
 
 				// TRACE !
-				color_samp = tracer(_scene, ray, _scene.camera.getPosition());
+				color_samp = tracer(_scene, ray, _scene.camera.getPosition(), po.maxDepth);
 
 				// Add color to sampling process
 				_antialiaser.setSampleValue (color_samp);
