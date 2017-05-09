@@ -3,7 +3,7 @@
 using namespace glm;
 
 color_t tracer (Scene& scene, vec3 ray, vec3 origin) {
-	color_t color;
+	color_t color = scene.backgroundColor;
 	int faceId;
 	size_t elementId;
 	vec3 intersection;

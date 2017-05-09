@@ -63,31 +63,49 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 		1.00
 	};
 
-	Material matGlass = {
-		"Glass",
+	Material matGreenGlass = {
+		"GreenGlass",
 		glm::vec4(1.0,0.95,0.95,1.0),
-		glm::vec4(0.95,1.0,0.95,1.0),
+		glm::vec4(0.15,1.0,0.15,1.0),
+		0.90,
+		0.30,
+		1.50
+	};
+
+	Material matBlueGlass = {
+		"BlueGlass",
+		glm::vec4(1.0,0.95,0.95,1.0),
+		glm::vec4(0.15,0.1,0.95,1.0),
+		0.90,
+		0.30,
+		1.50
+	};
+
+	Material matRedGlass = {
+		"RedGlass",
+		glm::vec4(1.0,0.95,0.95,1.0),
+		glm::vec4(0.95,0.1,0.15,1.0),
 		0.90,
 		0.30,
 		1.50
 	};
 
 	// Set scene
-	_scene.backgroundColor = glm::vec4(220, 220, 220, 255);
+	_scene.backgroundColor = glm::vec4(250, 250, 250, 255);
 
 	_scene.elements.push_back(new Element()); // Floor
 	objLoader("scene/ground.obj", _scene.elements[0]->faces);
 	_scene.elements[0]->material = matSolid;
 	_scene.elements.push_back(new Element()); // Cubes
 	objLoader("scene/cube1.obj", _scene.elements[1]->faces);
-	_scene.elements[1]->material = matGlass;
+	_scene.elements[1]->material = matGreenGlass;
 	_scene.elements.push_back(new Element()); // Cubes
 	objLoader("scene/cube2.obj", _scene.elements[2]->faces);
-	_scene.elements[2]->material = matGlass;
+	_scene.elements[2]->material = matBlueGlass;
 	_scene.elements.push_back(new Element()); // Cubes
 	objLoader("scene/cube3.obj", _scene.elements[3]->faces);
-	_scene.elements[3]->material = matGlass;
-	_scene.elementNumber = 2;
+	_scene.elements[3]->material = matRedGlass;
+	_scene.elementNumber = 4;
 }
 
 void Raytracer::computeImage () {
