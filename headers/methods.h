@@ -12,11 +12,13 @@ glm::vec4 tracer (Scene& scene, glm::vec3 ray);
 // > intersectionFinder
 //		Perform test over all elements in the scene to determin
 //		if the ray passes through a face
-void intersectionFinder (Scene& scene, glm::vec3 ray, int& faceId, glm::vec3& intersection, glm::vec3& normal);
+void intersectionFinder (Scene& scene, glm::vec3 ray, int& faceId, size_t& elementId, glm::vec3& intersection, glm::vec3& normal);
 
 // > shadowMapping
 //		Perform test over all elements in the scene to determin
 //		if a given point is shadowed by a face
-bool shadowMapping (Scene& scene, int faceId, glm::vec3 point);
+bool shadowMapping (Scene& scene, int faceId, size_t elementId, glm::vec3 point);
+
+glm::vec4 reflectionMapping (Scene& scene, int faceId, size_t elementId, glm::vec3 point, glm::vec3 incidentRay);
 
 #endif

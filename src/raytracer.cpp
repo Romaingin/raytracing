@@ -9,7 +9,7 @@
 
 Raytracer::Raytracer (ProgramOptions& po_) :
 	_antialiaser {po_.antialiasing},
-	_scene {glm::vec3(2.8,2.5,2), glm::vec3(0,0,0), 90.0,
+	_scene {glm::vec3(5.8,5.5,5), glm::vec3(0,0,0), 90.0,
 			(float)po_.image_width / (float)po_.image_height,
 			glm::vec3(0.7, -1.5, -1.2)} {
 	// Options
@@ -53,11 +53,35 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 	SDL_RenderPresent(_renderer);
 	SDL_SetRenderTarget(_renderer, NULL);
 
-	// Set scene
-	_scene.backgroundColor = glm::vec4(200, 200, 200, 255);
+	// Materials
+	Material matSolid = {
+		"Solid",
+		glm::vec4(0.0,1.0,1.0,1.0),
+		glm::vec4(1.0,1.0,1.0,1.0),
+		0.00,
+		0.00,
+		1.00
+	};
 
-	_scene.elements.push_back(new Element());
-	objLoader("scene/pyramid.obj", _scene.elements[0]->faces);
+	Material matGlass = {
+		"Glass",
+		glm::vec4(1.0,0.95,0.95,1.0),
+		glm::vec4(0.95,1.0,0.95,1.0),
+		0.90,
+		0.30,
+		1.50
+	};
+
+	// Set scene
+	_scene.backgroundColor = glm::vec4(220, 220, 220, 255);
+
+	_scene.elements.push_back(new Element()); // Floor
+	objLoader("scene/ground.obj", _scene.elements[0]->faces);
+	_scene.elements[0]->material = matSolid;
+	_scene.elements.push_back(new Element()); // Cubes
+	objLoader("scene/cubes.obj", _scene.elements[1]->faces);
+	_scene.elements[1]->material = matGlass;
+	_scene.elementNumber = 2;
 }
 
 void Raytracer::computeImage () {
