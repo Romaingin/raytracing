@@ -30,6 +30,7 @@ color_t tracer (Scene& scene, vec3 ray, vec3 origin, size_t depth) {
 
 	// Diffuse
 	float lighting = std::max(0.0f, -dot(normal, scene.sun.getDirection()));
+	if (!mat.castShadow) { lighting = 1.0; return scene.backgroundColor; }
 	diffuse = scene.sun.getColor() * lighting * scene.sun.getIntensity() * mat.diffuseColor;
 
 	// Reflection
@@ -39,7 +40,8 @@ color_t tracer (Scene& scene, vec3 ray, vec3 origin, size_t depth) {
 
 	// Refraction
 
-	return clamp(diffuse * shadow + mat.reflectivity * reflection);
+	// return clamp(diffuse * shadow + mat.diffuseColor * (mat.reflectivity * reflection + mat.diffusivity * scene.backgroundColor));
+	return clamp(shadow * diffuse + mat.diffuseColor * mat.reflectivity * reflection);
 }
 
 void intersectionFinder (Scene& scene, vec3 ray, vec3 origin, int& faceId, size_t& elementId, vec3& intersection, vec3& normal) {
@@ -50,7 +52,7 @@ void intersectionFinder (Scene& scene, vec3 ray, vec3 origin, int& faceId, size_
 
 	for (size_t el = 0; el < scene.elementNumber; el++) {
 		for (Face f : scene.elements[el]->faces) {
-			if (f.isRayThrough(ray, origin, &dist, &inter_tmp) && dist < minDist && dist > 0) {
+			if (f.isRayThrough(ray, origin, &dist, &inter_tmp) && dist < minDist && dist > 0.01) {
 				minDist = dist;
 				faceId = f.getId();
 				elementId = el;
@@ -68,7 +70,9 @@ bool shadowMapping (Scene& scene, int faceId, size_t elementId, vec3 origin) {
 
 	for (size_t el = 0; el < scene.elementNumber; el++) {
 		for (Face f : scene.elements[el]->faces) {
-			if (f.getId() != faceId && el != elementId && f.isRayThrough(-scene.sun.getDirection(), origin, &dist, &inter_tmp) && dist > 0) {
+			if (!(f.getId() == faceId && el == elementId) &&
+				f.isRayThrough(-scene.sun.getDirection(), origin, &dist, &inter_tmp) &&
+				dist > 0.01 && scene.elements[el]->material.castShadow) {
 				return true;
 			}
 		}
@@ -77,7 +81,7 @@ bool shadowMapping (Scene& scene, int faceId, size_t elementId, vec3 origin) {
 	return false;
 }
 
-color_t reflectionMapping (Scene& scene, int faceId, size_t elementId, vec3 origin, vec3 incidentRay, vec3 normal, size_t depth) {
+color_t reflectionMapping (Scene& scene, int, size_t, vec3 origin, vec3 incidentRay, vec3 normal, size_t depth) {
 	vec3 reflectedRay = incidentRay - 2 * dot(incidentRay, normal) * normal;
 	return tracer(scene, reflectedRay, origin, depth);
 }

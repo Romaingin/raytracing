@@ -8,9 +8,11 @@ struct Material {
 	std::string nom;
 	glm::vec4 specularColor;
 	glm::vec4 diffuseColor;
+	float diffusivity;
 	float transmittivity;
 	float reflectivity;
 	float reflectionIndex;
+	bool castShadow;
 };
 
 #endif

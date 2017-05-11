@@ -9,7 +9,7 @@
 
 Raytracer::Raytracer (ProgramOptions& po_) :
 	_antialiaser {po_.antialiasing},
-	_scene {glm::vec3(5.8,5.5,5), glm::vec3(0,0,0), 90.0,
+	_scene {glm::vec3(2.1,2.5,3), glm::vec3(0,0,0), 90.0,
 			(float)po_.image_width / (float)po_.image_height,
 			glm::vec3(0.7, -1.5, -1.2)} {
 	// Options
@@ -58,36 +58,44 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 		"Solid",
 		glm::vec4(0.0,1.0,1.0,1.0),
 		glm::vec4(1.0,1.0,1.0,1.0),
+		1.0,
 		0.00,
 		0.30,
-		1.00
+		1.00,
+		true
 	};
 
 	Material matGreenGlass = {
 		"GreenGlass",
 		glm::vec4(1.0,0.95,0.95,1.0),
 		glm::vec4(0.15,1.0,0.15,1.0),
-		0.90,
-		0.30,
-		1.50
+		0.15,
+		0.50,
+		0.50,
+		1.50,
+		true
 	};
 
 	Material matBlueGlass = {
 		"BlueGlass",
 		glm::vec4(1.0,0.95,0.95,1.0),
 		glm::vec4(0.15,0.1,0.95,1.0),
+		0.15,
 		0.90,
-		0.30,
-		1.50
+		0.50,
+		1.50,
+		true
 	};
 
 	Material matRedGlass = {
 		"RedGlass",
 		glm::vec4(1.0,0.95,0.95,1.0),
 		glm::vec4(0.95,0.1,0.15,1.0),
+		0.15,
 		0.90,
-		0.30,
-		1.50
+		0.50,
+		1.50,
+		true
 	};
 
 	// Set scene
@@ -97,15 +105,15 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 	objLoader("scene/ground.obj", _scene.elements[0]->faces);
 	_scene.elements[0]->material = matSolid;
 	_scene.elements.push_back(new Element()); // Cubes
-	objLoader("scene/cube1.obj", _scene.elements[1]->faces);
+	objLoader("scene/suzane.obj", _scene.elements[1]->faces);
 	_scene.elements[1]->material = matGreenGlass;
 	_scene.elements.push_back(new Element()); // Cubes
-	objLoader("scene/cube2.obj", _scene.elements[2]->faces);
-	_scene.elements[2]->material = matBlueGlass;
-	_scene.elements.push_back(new Element()); // Cubes
-	objLoader("scene/cube3.obj", _scene.elements[3]->faces);
-	_scene.elements[3]->material = matRedGlass;
-	_scene.elementNumber = 4;
+	// objLoader("scene/cube2.obj", _scene.elements[2]->faces);
+	// _scene.elements[2]->material = matBlueGlass;
+	// _scene.elements.push_back(new Element()); // Cubes
+	// objLoader("scene/cube3.obj", _scene.elements[3]->faces);
+	// _scene.elements[3]->material = matRedGlass;
+	_scene.elementNumber = 2;
 }
 
 void Raytracer::computeImage () {
