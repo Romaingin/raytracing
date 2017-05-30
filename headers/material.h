@@ -11,7 +11,7 @@ struct Material {
 	float diffusivity;
 	float transmittivity;
 	float reflectivity;
-	float reflectionIndex;
+	float refractionIndex;
 	bool castShadow;
 };
 

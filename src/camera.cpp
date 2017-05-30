@@ -13,7 +13,7 @@ Camera::Camera (vec3 position, vec3 target, float fov, float aspect) {
 	// Compute dirs
 	float w = tan(M_PI * _fov / 360.0);
 	_X = w / _aspect * normalize(cross(vec3(0.0, 1.0, 0.0), _aimVect));
-	_Y = -w * normalize(glm::cross(_X, _aimVect));
+	_Y = -w * normalize(cross(_X, _aimVect));
 }
 
 // > getRay

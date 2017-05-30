@@ -4,12 +4,13 @@
 #include "methods.h"
 #include <glm/glm.hpp>
 #include <iostream>
+#include <cmath>
 #include <unistd.h>
 #include <algorithm>
 
 Raytracer::Raytracer (ProgramOptions& po_) :
 	_antialiaser {po_.antialiasing},
-	_scene {glm::vec3(2.1,2.5,3), glm::vec3(0,0,0), 90.0,
+	_scene {glm::vec3(2.1,2.5,2), glm::vec3(0,0,0), 90.0,
 			(float)po_.image_width / (float)po_.image_height,
 			glm::vec3(0.7, -1.5, -1.2)} {
 	// Options
@@ -59,20 +60,20 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 		glm::vec4(0.0,1.0,1.0,1.0),
 		glm::vec4(1.0,1.0,1.0,1.0),
 		1.0,
-		0.00,
+		0.50,
 		0.30,
-		1.00,
+		1.30,
 		true
 	};
 
 	Material matGreenGlass = {
 		"GreenGlass",
 		glm::vec4(1.0,0.95,0.95,1.0),
-		glm::vec4(0.15,1.0,0.15,1.0),
+		glm::vec4(0.85,0.85,0.85,1.0),
 		0.15,
+		0.95,
 		0.50,
-		0.50,
-		1.50,
+		1.30,
 		true
 	};
 
@@ -106,13 +107,13 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 	_scene.elements[0]->material = matSolid;
 	_scene.elements.push_back(new Element()); // Cubes
 	objLoader("scene/suzane.obj", _scene.elements[1]->faces);
-	_scene.elements[1]->material = matGreenGlass;
+	_scene.elements[1]->material = matBlueGlass;
 	_scene.elements.push_back(new Element()); // Cubes
-	// objLoader("scene/cube2.obj", _scene.elements[2]->faces);
-	// _scene.elements[2]->material = matBlueGlass;
-	// _scene.elements.push_back(new Element()); // Cubes
-	// objLoader("scene/cube3.obj", _scene.elements[3]->faces);
-	// _scene.elements[3]->material = matRedGlass;
+	objLoader("scene/cube2.obj", _scene.elements[2]->faces);
+	_scene.elements[2]->material = matGreenGlass;
+	_scene.elements.push_back(new Element()); // Cubes
+	objLoader("scene/cube3.obj", _scene.elements[3]->faces);
+	_scene.elements[3]->material = matRedGlass;
 	_scene.elementNumber = 2;
 }
 
@@ -202,7 +203,7 @@ void Raytracer::traceZone (int X, int Y) {
 				glm::vec3 ray = _scene.camera.getRay(x, y);
 
 				// TRACE !
-				color_samp = tracer(_scene, ray, _scene.camera.getPosition(), po.maxDepth);
+				color_samp = tracer(_scene, ray, _scene.camera.getPosition(), 1.0, po.maxDepth);
 
 				// Add color to sampling process
 				_antialiaser.setSampleValue (color_samp);
