@@ -12,7 +12,7 @@ DEPS = $(patsubst %.o,$(DEPDIR)/%.d,$(OTMP))
 # Variables
 CC = g++
 CPPFLAGS = -std=c++11 -Wall -Wextra -O3 -Iheaders -I/usr/include/eigen3
-LIBS = -lpthread -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_gfx
+LIBS = -lpthread -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_gfx -fopenmp
 
 all: init $(OBJS)
 	@echo Building the executable...

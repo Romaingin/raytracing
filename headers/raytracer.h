@@ -33,7 +33,7 @@ private:
 public:
 	void computeImage ();
 	void saveImage (const char *);
-	void traceZone (int, int);
+	void traceZone (int, int, Uint32*);
 
 	Raytracer (ProgramOptions&);
 	~Raytracer ();

@@ -7,10 +7,11 @@
 #include <cmath>
 #include <unistd.h>
 #include <algorithm>
+#include "omp.h"
 
 Raytracer::Raytracer (ProgramOptions& po_) :
 	_antialiaser {po_.antialiasing},
-	_scene {glm::vec3(2.1,2.5,2), glm::vec3(0,0,0), 90.0,
+	_scene {glm::vec3(2.1,1.5,2), glm::vec3(0,0.5,0), 90.0,
 			(float)po_.image_width / (float)po_.image_height,
 			glm::vec3(0.7, -1.5, -1.2)} {
 	// Options
@@ -66,13 +67,13 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 		true
 	};
 
-	Material matGreenGlass = {
+	Material matMetal = {
 		"GreenGlass",
 		glm::vec4(1.0,0.95,0.95,1.0),
 		glm::vec4(0.85,0.85,0.85,1.0),
-		0.15,
-		0.95,
-		0.50,
+		0.45,
+		0.00,
+		0.60,
 		1.30,
 		true
 	};
@@ -106,11 +107,11 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 	objLoader("scene/ground.obj", _scene.elements[0]->faces);
 	_scene.elements[0]->material = matSolid;
 	_scene.elements.push_back(new Element()); // Cubes
-	objLoader("scene/suzane.obj", _scene.elements[1]->faces);
-	_scene.elements[1]->material = matBlueGlass;
+	objLoader("scene/cube1.obj", _scene.elements[1]->faces);
+	_scene.elements[1]->material = matMetal;
 	_scene.elements.push_back(new Element()); // Cubes
 	objLoader("scene/cube2.obj", _scene.elements[2]->faces);
-	_scene.elements[2]->material = matGreenGlass;
+	_scene.elements[2]->material = matBlueGlass;
 	_scene.elements.push_back(new Element()); // Cubes
 	objLoader("scene/cube3.obj", _scene.elements[3]->faces);
 	_scene.elements[3]->material = matRedGlass;
@@ -123,11 +124,18 @@ void Raytracer::computeImage () {
 	bool hasFinished = false;
 
 	// Coordinates
-	int x = 0;
-	int y = 0;
+	// int x = 0;
+	// int y = 0;
 	SDL_Rect box_rect;
 	box_rect.w = po.target_size;
 	box_rect.h = po.target_size;
+
+	// Lock texture
+	void *tmp;
+	Uint32 *pixels;
+	int pitch;
+	SDL_LockTexture(_image, NULL, &tmp, &pitch);
+	pixels = (Uint32 *)tmp;
 
 	// Main loop
 	while (isRunning) {
@@ -142,28 +150,30 @@ void Raytracer::computeImage () {
 			}
 		}
 
-		if (!hasFinished) {
-			// Render a zone
-			traceZone(x, y);
-			x += po.target_size;
-			if (x >= po.image_width) {
-				x = 0;
-				y += po.target_size;
-			}
-			if (y >= po.image_height) {
-				hasFinished = false;
-			}
+		size_t nx = po.image_width / po.target_size;
+		size_t ny = po.image_height / po.target_size;
 
-			// Draw a box
-			box_rect.x = x;
-			box_rect.y = y;
+		if (!hasFinished) {
+			for (size_t i = 0; i < nx; i++) {
+				#pragma omp parallel for
+				for (size_t j = 0; j < ny; j++) {
+					int x = po.target_size * i;
+					int y = po.target_size * j;
+					traceZone(x, y, pixels);
+				}
+			}
 		}
+
+		hasFinished = true;
+
+		// Unlock
+		SDL_UnlockTexture(_image);
 
 		// Render to screen
 		SDL_RenderCopy(_renderer, _image, NULL, NULL);
-		SDL_RenderCopy(_renderer, _box, NULL, &box_rect);
 		SDL_RenderPresent(_renderer);
 	}
+
 }
 
 // > saveImage
@@ -177,16 +187,7 @@ void Raytracer::saveImage (const char* file_name) {
 
 // > traceZone
 //		Compute a particlar square (X, Y) of the image
-void Raytracer::traceZone (int X, int Y) {
-	// usleep(3000); // TODO
-
-	void *tmp;
-	Uint32 *pixels;
-	int pitch;
-
-	// Lock
-	SDL_LockTexture(_image, NULL, &tmp, &pitch);
-	pixels = (Uint32 *)tmp;
+void Raytracer::traceZone (int X, int Y, Uint32* pixels) {
 	glm::vec4 color_samp;
 
 	int sx = std::min(po.target_size, po.image_width - X);
@@ -215,9 +216,6 @@ void Raytracer::traceZone (int X, int Y) {
 			pixels[p] = SDL_MapRGBA(_format, (Uint8)color.x, (Uint8)color.y, (Uint8)color.z, (Uint8)color.t);
 		}
 	}
-
-	// Unlock
-	SDL_UnlockTexture(_image);
 }
 
 Raytracer::~Raytracer () {
