@@ -1,7 +1,7 @@
 # Raytracing Software
 ### ENSTA IN104
 
-C++ parallelized implementation of a ratracing techinque
+C++ parallelized implementation of a ratracing software.
 
 ## Libraries
 

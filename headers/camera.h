@@ -10,7 +10,6 @@ private:
 	glm::vec3 _Y;
 	glm::vec3 _X;
 	glm::vec3 _aimVect;
-	glm::mat4 _projection_matrix;
 	float _fov;
 	float _aspect;
 

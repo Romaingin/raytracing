@@ -11,7 +11,7 @@
 
 Raytracer::Raytracer (ProgramOptions& po_) :
 	_antialiaser {po_.antialiasing},
-	_scene {glm::vec3(2.1,1.5,2), glm::vec3(0,0.5,0), 90.0,
+	_scene {glm::vec3(2.1,1.5,2), glm::vec3(0,0.8,0), 90.0,
 			(float)po_.image_width / (float)po_.image_height,
 			glm::vec3(0.7, -1.5, -1.2)} {
 	// Options
@@ -107,7 +107,7 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 	objLoader("scene/ground.obj", _scene.elements[0]->faces);
 	_scene.elements[0]->material = matSolid;
 	_scene.elements.push_back(new Element()); // Cubes
-	objLoader("scene/cube1.obj", _scene.elements[1]->faces);
+	objLoader("scene/ballooon.obj", _scene.elements[1]->faces);
 	_scene.elements[1]->material = matMetal;
 	_scene.elements.push_back(new Element()); // Cubes
 	objLoader("scene/cube2.obj", _scene.elements[2]->faces);
@@ -130,12 +130,6 @@ void Raytracer::computeImage () {
 	box_rect.w = po.target_size;
 	box_rect.h = po.target_size;
 
-	// Lock texture
-	void *tmp;
-	Uint32 *pixels;
-	int pitch;
-	SDL_LockTexture(_image, NULL, &tmp, &pitch);
-	pixels = (Uint32 *)tmp;
 
 	// Main loop
 	while (isRunning) {
@@ -150,17 +144,37 @@ void Raytracer::computeImage () {
 			}
 		}
 
+		int n_threads = 8;
+
+		// Lock texture
+		void *tmp;
+		Uint32 *pixels;
+		int pitch;
+
 		size_t nx = po.image_width / po.target_size;
 		size_t ny = po.image_height / po.target_size;
 
 		if (!hasFinished) {
-			for (size_t i = 0; i < nx; i++) {
-				#pragma omp parallel for
-				for (size_t j = 0; j < ny; j++) {
+			for (size_t iter = 0; iter <  ny * nx / n_threads / n_threads; iter++) {
+				SDL_LockTexture(_image, NULL, &tmp, &pitch);
+				pixels = (Uint32 *)tmp;
+
+				#pragma omp parallel for schedule(dynamic)
+				for (size_t p = 0; p < n_threads * n_threads; p++) {
+					int pos = n_threads * n_threads * iter + p;
+					int i = pos % nx;
+					int j = pos / nx;
 					int x = po.target_size * i;
 					int y = po.target_size * j;
 					traceZone(x, y, pixels);
 				}
+
+				// Unlock
+				SDL_UnlockTexture(_image);
+
+				// Render to screen
+				SDL_RenderCopy(_renderer, _image, NULL, NULL);
+				SDL_RenderPresent(_renderer);
 			}
 		}
 
@@ -173,7 +187,6 @@ void Raytracer::computeImage () {
 		SDL_RenderCopy(_renderer, _image, NULL, NULL);
 		SDL_RenderPresent(_renderer);
 	}
-
 }
 
 // > saveImage
@@ -190,14 +203,16 @@ void Raytracer::saveImage (const char* file_name) {
 void Raytracer::traceZone (int X, int Y, Uint32* pixels) {
 	glm::vec4 color_samp;
 
+	Antialiaser antialiaser = Antialiaser(po.antialiasing);
+
 	int sx = std::min(po.target_size, po.image_width - X);
 	int sy = std::min(po.target_size, po.image_height - Y);
 	// For all pixels
 	for (int i = 0; i < sx; i++) {
 		for (int j = 0; j < sy; j++) {
-			_antialiaser.resetPixelValue();
+			antialiaser.resetPixelValue();
 			// For all samples
-			for (glm::vec2 samp : _antialiaser.getPixelSamplesRepartition()) {
+			for (glm::vec2 samp : antialiaser.getPixelSamplesRepartition()) {
 				// Get the ray coming from the camera
 				float x = (float)(X + i + samp.x) / (float)po.image_width - 0.5;
 				float y = (float)(Y + j + samp.y) / (float)po.image_height - 0.5;
@@ -207,11 +222,11 @@ void Raytracer::traceZone (int X, int Y, Uint32* pixels) {
 				color_samp = tracer(_scene, ray, _scene.camera.getPosition(), 1.0, po.maxDepth);
 
 				// Add color to sampling process
-				_antialiaser.setSampleValue (color_samp);
+				antialiaser.setSampleValue(color_samp);
 			}
 
 			// Set pixel color
-			color_t color = _antialiaser.getPixelValue() * 255;
+			color_t color = antialiaser.getPixelValue() * 255;
 			int p = (Y + j) * po.image_width + (X + i);
 			pixels[p] = SDL_MapRGBA(_format, (Uint8)color.x, (Uint8)color.y, (Uint8)color.z, (Uint8)color.t);
 		}
