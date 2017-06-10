@@ -12,13 +12,12 @@ int main () {
 		512+256,	// Width of the picture
 		512+256,	// Height of the picture
 		32,		// Width and height of the areas to render sequentially
-		1,		// Level of antialiasing
+		2,		// Level of antialiasing
 		4		// Max recursion depth
 	};
 
 	std::cout << "Image resolution : " << po.image_width << "x" << po.image_height << '\n';
 	std::cout << "Antialiasing Level : " << po.antialiasing << '\n';
-
 
 	Raytracer raytracer(po);
 

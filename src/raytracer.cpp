@@ -107,7 +107,7 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 	objLoader("scene/ground.obj", _scene.elements[0]->faces);
 	_scene.elements[0]->material = matSolid;
 	_scene.elements.push_back(new Element()); // Cubes
-	objLoader("scene/ballooon.obj", _scene.elements[1]->faces);
+	objLoader("scene/cube1.obj", _scene.elements[1]->faces);
 	_scene.elements[1]->material = matMetal;
 	_scene.elements.push_back(new Element()); // Cubes
 	objLoader("scene/cube2.obj", _scene.elements[2]->faces);
@@ -158,7 +158,6 @@ void Raytracer::computeImage () {
 			for (size_t iter = 0; iter <  ny * nx / n_threads / n_threads; iter++) {
 				SDL_LockTexture(_image, NULL, &tmp, &pitch);
 				pixels = (Uint32 *)tmp;
-
 				#pragma omp parallel for schedule(dynamic)
 				for (size_t p = 0; p < n_threads * n_threads; p++) {
 					int pos = n_threads * n_threads * iter + p;

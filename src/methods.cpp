@@ -1,6 +1,7 @@
 #include "methods.h"
 #include "material.h"
 #include <cmath>
+#include <iostream>
 #include <algorithm>
 
 using namespace glm;
@@ -56,9 +57,6 @@ color_t tracer (Scene& scene, vec3 ray, vec3 origin, float n, size_t depth) {
 		fres = mat.reflectivity * (kr * reflection + (1.0f-kr) * refraction);
 	}
 
-
-
-	// return clamp(diffuse * shadow + mat.diffuseColor * (mat.reflectivity * reflection + mat.diffusivity * scene.backgroundColor));
 	return clamp(shadow * diffuse + mat.diffuseColor * fres);
 }
 
