@@ -21,7 +21,7 @@ color_t tracer (Scene& scene, vec3 ray, vec3 origin, float n, size_t depth) {
 	// Define colors
 	color_t shadow = color_t(1.0,1.0,1.0,1.0);
 	color_t diffuse;
-	color_t fres = color_t(0.0,0.0,0.0,1.0);
+	color_t res = color_t(0.0,0.0,0.0,1.0);
 	color_t reflection = color_t(0.0,0.0,0.0,1.0);
 	color_t refraction = color_t(0.0,0.0,0.0,1.0);
 	Material mat = scene.elements[elementId]->material;
@@ -37,27 +37,46 @@ color_t tracer (Scene& scene, vec3 ray, vec3 origin, float n, size_t depth) {
 	diffuse = scene.sun.getColor() * lighting * scene.sun.getIntensity() * mat.diffuseColor;
 
 	if (depth > 0) {
-		// Compute the Fresnel number
-		float kr = fresnel(scene, faceId, elementId, ray, normal, n);
-
 		// Refraction
-		if (kr < 1.0f) {
+		if (mat.transmittivity > 0.0) {
 			refraction = refractionMapping(scene, faceId, elementId,
 											intersection, ray, normal,
 											n,
 											depth-1);
+
+			if (mat.reflectivity == 0.0) {
+				return clamp(shadow * diffuse + mat.transmittivity * refraction);
+			}
 		}
 
 		// Reflection
-		reflection = reflectionMapping(scene, faceId, elementId,
-										intersection, ray, normal,
-										n,
-										depth-1);
+		if (mat.reflectivity > 0.0) {
+			reflection = reflectionMapping(scene, faceId, elementId,
+											intersection, ray, normal,
+											n,
+											depth-1);
 
-		fres = mat.reflectivity * (kr * reflection + (1.0f-kr) * refraction);
+			if (mat.refractionIndex == 0.0) {
+				return clamp(shadow * diffuse + mat.reflectivity * reflection);
+			}
+		}
+
+		// Fresnel effect ?
+		float kr;
+		if (mat.transmittivity > 0.0 && mat.reflectivity > 0.0) {
+			// Compute the Fresnel number
+			kr = fresnel(scene, faceId, elementId, ray, normal, n);
+		} else {
+			kr = 0.0f;
+		}
+
+		res = mat.reflectivity * (kr * reflection + (1.0f-kr) * refraction);
+		return clamp(shadow * diffuse + mat.diffuseColor * res);
+
+	} else {
+		// No more depth
+		return clamp(shadow * diffuse);
 	}
-
-	return clamp(shadow * diffuse + mat.diffuseColor * fres);
 }
 
 void intersectionFinder (Scene& scene, vec3 ray, vec3 origin, int& faceId, size_t& elementId, vec3& intersection, vec3& normal) {
@@ -114,17 +133,19 @@ color_t refractionMapping (Scene& scene, int, size_t elementId, vec3 origin, vec
 
 	// Angles
 	float cosi = -dot(normalize(incidentRay), normal);
-	float sint2 = n1dn2 * n1dn2 * (1.0f - cosi * cosi);
-	vec3 refractedRay;
-
-	refractedRay = n1dn2 * incidentRay + (cosi - sqrt(1.0f - sint2)) * normal;
-	return tracer(scene, refractedRay, origin, n2, depth);
+	float k = 1.0f - n1dn2 * n1dn2 * (1.0f - cosi * cosi);
+	if (k < 0) {
+		return color_t(0.0,0.0,0.0,0.0);
+	} else {
+		vec3 refractedRay = n1dn2 * incidentRay + (n1dn2 * cosi - sqrt(k)) * normal;
+		return tracer(scene, refractedRay, origin, n2, depth);
+	}
 }
 
 float fresnel(Scene& scene, int, size_t elementId, vec3 incidentRay, vec3 normal, float n) {
 	float cosi = std::max(-1.0f,std::min(dot(incidentRay, normal), 1.0f));
 	float etai = n;
-	float etat = scene.elements[elementId]->material.refractionIndex;;
+	float etat = scene.elements[elementId]->material.refractionIndex;
 	float kr;
 
 	if (cosi > 0.0f) { std::swap(etai, etat); }

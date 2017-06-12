@@ -11,9 +11,9 @@
 
 Raytracer::Raytracer (ProgramOptions& po_) :
 	_antialiaser {po_.antialiasing},
-	_scene {glm::vec3(2.1,1.5,2), glm::vec3(0,0.8,0), 90.0,
+	_scene {glm::vec3(-6.1,3.5,4), glm::vec3(0,0.8,0), 90.0,
 			(float)po_.image_width / (float)po_.image_height,
-			glm::vec3(0.7, -1.5, -1.2)} {
+			glm::vec3(0.9, -1.9, 1.1)} {
 	// Options
 	po = po_;
 
@@ -63,7 +63,7 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 		1.0,
 		0.50,
 		0.30,
-		1.30,
+		0.0,
 		true
 	};
 
@@ -72,9 +72,9 @@ Raytracer::Raytracer (ProgramOptions& po_) :
 		glm::vec4(1.0,0.95,0.95,1.0),
 		glm::vec4(0.85,0.85,0.85,1.0),
 		0.45,
-		0.00,
-		0.60,
-		1.30,
+		0.10,
+		0.50,
+		1.20,
 		true
 	};
 
